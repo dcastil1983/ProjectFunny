@@ -46,7 +46,7 @@ BaseApplication::~BaseApplication(void)
     Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
     windowClosed(mWindow);
     delete mRoot;
-        delete rect;
+    delete rect;
 }
 
 //-------------------------------------------------------------------------------------
@@ -405,61 +405,6 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
     {
         mDirection.x = -mMove;
     }
-
-/*
-    switch (arg.key)
-    {
-    case OIS::KC_ESCAPE: 
-        mShutDown = true;
-        break;
-    case OIS::KC_UP:
-    else if() OIS::KC_W)
-        mDirection.z = -mMove;
-    break;
- 
-    case OIS::KC_DOWN:
-    case OIS::KC_S:
-        mDirection.z = mMove;
-        break;
-     
-    case OIS::KC_LEFT:
-    case OIS::KC_A:
-        mDirection.x = -mMove;
-        break;
-     
-    case OIS::KC_RIGHT:
-    case OIS::KC_D:
-        mDirection.x = mMove;
-        break;
-     
-    case OIS::KC_PGDOWN:
-    case OIS::KC_E:
-        mDirection.y = -mMove;
-        break;
-     
-    case OIS::KC_PGUP:
-    case OIS::KC_Q:
-        mDirection.y = mMove;
-        break;
-
-    case OIS::KC_1:
-        mCamera->getParentSceneNode()->detachObject(mCamera);
-        mCamNode = mSceneMgr->getSceneNode("CamNode1");
-        mCamNode->attachObject(mCamera);
-        break;
- 
-    case OIS::KC_2:
-        mCamera->getParentSceneNode()->detachObject(mCamera);
-        mCamNode = mSceneMgr->getSceneNode("CamNode2");
-        mCamNode->attachObject(mCamera);
-        break;
-
-    default:
-
-        break;
-
-    }
-    */
     mCameraMan->injectKeyDown(arg);
     return true;
 }

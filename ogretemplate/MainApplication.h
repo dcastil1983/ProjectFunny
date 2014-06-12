@@ -37,6 +37,10 @@ protected:
     // OIS::KeyListener
     virtual bool keyPressed( const OIS::KeyEvent& evt );
     virtual bool keyReleased( const OIS::KeyEvent& evt );
+    void spawn_enemy();
+    void shoot();
+    bool isCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction);
+
     // OIS::MouseListener
 //    virtual bool mouseMoved( const OIS::MouseEvent& evt );
 //    virtual bool mousePressed( const OIS::MouseEvent& evt, OIS::MouseButtonID id );
@@ -44,8 +48,14 @@ protected:
  
     Ogre::Real mRotate;          // The rotate constant
     Ogre::Real mMove;            // The movement constant
+    Ogre::Vector3 mDistance;         //Holds the bounds the player can move
     Ogre::SceneNode *mCamNode;   // The SceneNode the camera is currently attached to
     Ogre::Vector3 mDirection;    // Value to move in the correct direction
+    Ogre::Entity *ent; //The Entity
+    Ogre::SceneNode *node; //The SceneNode that the entity is attached to
+    Ogre::RaySceneQuery * mRaySceneQuery;
+    std::vector<std::string> shots;
+    std::vector<std::string> enemies;
     
 };
 

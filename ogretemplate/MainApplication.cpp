@@ -11,7 +11,7 @@
 #define MAX_DOWN -450
 #define MAX_UP 450
 #define MAX_RIGHT 720
-#define MAX_ENEMY 35
+#define MAX_ENEMY 30
 
 int timer = 0;
 //uint number = 0;
@@ -26,6 +26,7 @@ MainApplication::MainApplication(void)
 MainApplication::~MainApplication(void)
 {
     mSceneMgr -> destroyQuery(mRaySceneQuery);
+    mSceneMgr -> destroyQuery(mRaySceneQuery2);
 }
  
 //-------------------------------------------------------------------------------------
@@ -42,29 +43,43 @@ bool MainApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mMouse->capture();
 
     Ogre::Vector3 shotsSpeed(500, 0, 0);
-    Ogre::Vector3 enemySpeed(-400, rand() % 10 - 5, 0);
+    Ogre::Vector3 enemySpeed(-500, rand() % 10 - 5, 0);
 
-    Ogre::Vector3 position = mSceneMgr -> getSceneNode("NinjaNode")->getPosition();
-    Ogre::Vector3 direction = mSceneMgr -> getSceneNode("NinjaNode") -> getOrientation() * Ogre::Vector3(0,0,1);
-    if(isCollision(position, direction))
+    Ogre::Vector3 playerPosition = mSceneMgr -> getSceneNode("NinjaNode")->getPosition();
+    Ogre::Vector3 playerDirection = mSceneMgr -> getSceneNode("NinjaNode") -> getOrientation() * Ogre::Vector3(0,0,1);
+    //Ogre::Vector3 direction = mSceneMgr -> getSceneNode("NinjaNode") ->_getDerivedOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+
+    if(playerCollision(playerPosition, playerDirection))
     {
-       // mShutDown = true;
+        mSceneMgr -> getSceneNode("NinjaNode") -> setPosition(Ogre::Vector3(0, 0, -500));
     }
 
 
     mTrayMgr->frameRenderingQueued(evt);
-     mSceneMgr -> getSceneNode("NinjaNode") -> translate(mDirection * evt.timeSinceLastFrame, Ogre::Node::TS_WORLD);
+    mSceneMgr -> getSceneNode("NinjaNode") -> translate(mDirection * evt.timeSinceLastFrame, Ogre::Node::TS_WORLD);
     if(shotCounter)
     {
-        Ogre::String number2 = Ogre::StringConverter::toString(shotCounter); 
+        //Ogre::String number2 = Ogre::StringConverter::toString(shotCounter); 
         for(int i = 0; i < shots.size(); i++)
+        {
+            Ogre::Vector3 shotPosition = mSceneMgr -> getSceneNode(shots[i])->getPosition();
+            Ogre::Vector3 shotDirection = mSceneMgr -> getSceneNode(shots[i]) -> getOrientation() * Ogre::Vector3(0,0,1);
+            if(bulletCollision(shotPosition, shotDirection))
+            {
+                mSceneMgr -> getSceneNode("NinjaNode") -> setPosition(Ogre::Vector3(0, 0, 0));
+                //mDistance = Ogre::Vector3::ZERO;
+               //mShutDown = true;
+            }
             mSceneMgr -> getSceneNode(shots[i]) -> translate(shotsSpeed * evt.timeSinceLastFrame, Ogre::Node::TS_WORLD);
+        }
     }
     if(enemyCounter)
     {
-        Ogre::String number = Ogre::StringConverter::toString(enemyCounter); 
+        //Ogre::String number = Ogre::StringConverter::toString(enemyCounter); 
         for(int i = 0; i < enemies.size(); i++)
+        {
             mSceneMgr -> getSceneNode(enemies[i]) -> translate(enemySpeed * evt.timeSinceLastFrame, Ogre::Node::TS_WORLD);
+        }
     }
     //enemytranslate
     mDistance = mSceneMgr-> getSceneNode("NinjaNode")->getPosition();
@@ -101,6 +116,7 @@ void MainApplication::createFrameListener(void)
     BaseApplication::createFrameListener();
 
     mRaySceneQuery = mSceneMgr -> createRayQuery(Ogre::Ray());
+    mRaySceneQuery2 = mSceneMgr -> createRayQuery(Ogre::Ray());
 
     // Populate the camera container
     mCamNode = mCamera->getParentSceneNode();
@@ -188,6 +204,12 @@ void MainApplication::createScene(void)
     ent = mSceneMgr->createEntity("Ninja", "ogrehead.mesh");
     node = mSceneMgr->getRootSceneNode()->createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 25.0f));
     node->attachObject(ent);
+    node->yaw(Ogre::Degree(90));
+    node -> setPosition(Ogre::Vector3(0, 0, -500));
+
+    Ogre::SceneNode *sceneNode = mSceneMgr -> getRootSceneNode() -> createChildSceneNode("CanNode", Ogre::Vector3(0, 0, 500));
+    sceneNode = sceneNode -> createChildSceneNode("Pitchnode");
+    sceneNode -> attachObject(mCamera);
 
     // create the light
     Ogre::Light *light = mSceneMgr->createLight("Light1");
@@ -198,21 +220,28 @@ void MainApplication::createScene(void)
 
     
    // Create the scene node
-    node = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode1", Ogre::Vector3(-400, 200, 400));
+    //node = mSceneMgr->getRootSceneNode()->createChildSceneNode("CamNode1", Ogre::Vector3(-400, 200, 400));
 
     // Make it look towards the ninja
-    node -> setPosition(Ogre::Vector3(0,0,1000));
-    //node->yaw(Ogre::Degree(30));
+    //node -> setPosition(Ogre::Vector3(0,0,1000));
 
     // Create the pitch node
-    node = node->createChildSceneNode("PitchNode1");
-    node->attachObject(mCamera);
+    //node = node->createChildSceneNode("PitchNode1");
+    //node->attachObject(mCamera);
 }
 
 void MainApplication::shoot()
 {
+    
     Ogre::String number2 = Ogre::StringConverter::toString(shotCounter + 1); 
     shots.push_back("manual1_node" + number2);
+    /*
+    Ogre::Entity* ogreHead = mSceneMgr -> createEntity("ogrehead.mesh");
+    Ogre::SceneNode *headNode = mSceneMgr -> getRootSceneNode() -> createChildSceneNode("manual1_node" + number2);
+    Ogre::Vector3 pos1(mSceneMgr-> getSceneNode("NinjaNode")->getPosition());
+    headNode -> setPosition(pos1);
+    headNode -> attachObject(ogreHead);
+    */
     Ogre::ManualObject* myManualObject =  mSceneMgr->createManualObject("manual1" + number2); 
     Ogre::SceneNode* myManualObjectNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("manual1_node" + number2); 
      
@@ -233,7 +262,6 @@ void MainApplication::shoot()
     myManualObject->position(pos1.x + 50, pos1.y, pos1.z); 
     // etc 
     myManualObject->end(); 
-     
     myManualObjectNode->attachObject(myManualObject);
     shotCounter++;
     
@@ -241,41 +269,66 @@ void MainApplication::shoot()
 
 void MainApplication::spawn_enemy()
 {
-    Ogre::String number = Ogre::StringConverter::toString(enemyCounter + 1); 
-    enemies.push_back("HeadNode" + number);
-    Ogre::Entity* ogreHead = mSceneMgr->createEntity("ogrehead.mesh");
-    Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("HeadNode" + number);
-    Ogre::Vector3 pos1(mSceneMgr-> getSceneNode("NinjaNode")->getPosition());
-    headNode -> setPosition(Ogre::Vector3(1000, rand() % 800 - 400, pos1.z));
-    headNode -> attachObject(ogreHead);
-    enemyCounter++;
-    std::cout << number << std::endl;
-
-
+   // if(enemyCounter < MAX_ENEMY)
+    //{
+        Ogre::String number = Ogre::StringConverter::toString(enemyCounter + 1); 
+        enemies.push_back("HeadNode" + number);
+        Ogre::Entity* ogreHead = mSceneMgr->createEntity("ogrehead.mesh");
+        Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("HeadNode" + number);
+        Ogre::Vector3 pos1(mSceneMgr-> getSceneNode("NinjaNode")->getPosition());
+        headNode -> setPosition(Ogre::Vector3(1000, rand() % 800 - 400, pos1.z));
+        headNode -> attachObject(ogreHead);
+        headNode->yaw(Ogre::Degree(-90));
+        enemyCounter++;
+   // }
 }
 
-bool MainApplication::isCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction)
+bool MainApplication::playerCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction)
 {
 
     Ogre::Ray ray(position, direction);
-
     mRaySceneQuery->setRay(ray);
-
     Ogre::RaySceneQueryResult &result = mRaySceneQuery->execute();
-
     Ogre::RaySceneQueryResult::iterator itr;
-
-    for (itr = result.begin(); itr != result.end(); itr++) {
-
-        if (itr->movable->getName().compare("NinjaNode")!=0 && itr->distance < 1) {
-            return true;
-
+    for (itr = result.begin(); itr != result.end(); itr++) 
+    {
+        if(enemyCounter)
+        {
+            Ogre::String name = itr -> movable -> getName();
+            //Ogre::String number = Ogre::StringConverter::toString(enemyCounter); 
+            for(int i = 0; i < enemies.size(); i++)
+            {
+                if (itr -> movable -> getName().compare("Ninja") != 0 && itr -> distance <= 10) 
+                {
+                    std::cout << name << std::endl;
+                    return true;
+                }
+            }
         }
-
     }
-
     return false;
+}
 
+bool MainApplication::bulletCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction)
+{
+    Ogre::Ray ray(position, direction);
+    mRaySceneQuery2->setRay(ray);
+    Ogre::RaySceneQueryResult &result = mRaySceneQuery2->execute();
+    Ogre::RaySceneQueryResult::iterator itr;
+    for (itr = result.begin(); itr != result.end(); itr++) 
+    {
+        if(enemyCounter)
+        {
+            Ogre::String name = itr -> movable -> getName();
+            //Ogre::String number = Ogre::StringConverter::toString(enemyCounter); 
+                if(itr -> movable -> getName() != "Ninja")
+                {
+                    std::cout << name << std::endl;
+                    return true;
+                }
+        }
+    }
+    return false;
 }
     
 #ifdef __cplusplus

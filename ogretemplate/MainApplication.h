@@ -39,7 +39,8 @@ protected:
     virtual bool keyReleased( const OIS::KeyEvent& evt );
     void spawn_enemy();
     void shoot();
-    bool isCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction);
+    bool playerCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction);
+    bool bulletCollision(const Ogre::Vector3& position, const Ogre::Vector3 &direction);
 
     // OIS::MouseListener
 //    virtual bool mouseMoved( const OIS::MouseEvent& evt );
@@ -53,7 +54,8 @@ protected:
     Ogre::Vector3 mDirection;    // Value to move in the correct direction
     Ogre::Entity *ent; //The Entity
     Ogre::SceneNode *node; //The SceneNode that the entity is attached to
-    Ogre::RaySceneQuery * mRaySceneQuery;
+    Ogre::RaySceneQuery *mRaySceneQuery;
+    Ogre::RaySceneQuery *mRaySceneQuery2;
     std::vector<std::string> shots;
     std::vector<std::string> enemies;
     
